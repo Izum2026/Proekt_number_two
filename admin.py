@@ -1,5 +1,5 @@
 import os
-from flask_admin import Admin
+from flask_admin import Admin, AdminIndexView
 from flask_admin.contrib.sqla import ModelView
 from flask_admin.form.upload import FileUploadField
 from werkzeug.utils import secure_filename
@@ -14,7 +14,15 @@ class ProtectedModelView(ModelView):
         return redirect(url_for('admin_login'))
 
 
-class MenuItemAdmin(ModelView):
+class ProtectedAdminIndexView(AdminIndexView):
+    def is_accessible(self):
+        return session.get('admin_logged_in')
+
+    def inaccessible_callback(self, name, **kwargs):
+        return redirect(url_for('admin_login'))
+
+
+class MenuItemAdmin(ProtectedModelView):
     form_extra_fields = {
         'image_upload': FileUploadField(
             label='Картинка блюда',
@@ -37,7 +45,8 @@ class MenuItemAdmin(ModelView):
 def init_admin(app, db):
     admin = Admin(
         app,
-        name='Админка шаурмечной'
+        name='Админка шаурмечной',
+        index_view=ProtectedAdminIndexView()
     )
 
     from app import MenuItem

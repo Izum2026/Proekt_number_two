@@ -1,0 +1,26 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+
+<main class="page_main">
+    {% for category, items in categories.items() %}
+    <h2 class="catalog_title">{{ category }}</h2>
+    <section class="container_catalog">
+        <ul class="catalog_list">
+            {% for item in items %}
+            <li class="catalog_item">
+                <img src="{{ url_for('static', filename='images/' + item.image) }}"
+                     width="300" height="200" class="catalog_item_img" alt="{{ item.name }}">
+                <p class="catalog_text">{{ item.name }}</p>
+                <p class="price">{{ item.price }}₽</p>
+            </li>
+            {% endfor %}
+        </ul>
+    </section>
+    {% endfor %}
+</main>
+
+
+
+{% endblock %}

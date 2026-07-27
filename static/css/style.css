@@ -1,0 +1,271 @@
+* {
+    padding: 0;
+    margin: 0;
+    font-family: 'Montserrat', sans-serif;
+}
+
+html {
+    box-sizing: border-box;
+}
+
+.name_category {
+    margin-top: 30px;
+    font-weight: 700;
+}
+
+body {
+    flex-direction: column;
+    margin: 0 auto;
+    height: 100%;
+    font-weight: 500;
+    font-size: 35px;
+    line-height: 43px;
+    color: #000000;
+}
+
+main {
+    display: flex;
+    flex-direction: column;
+    margin: 0 auto;
+    height: 100%;
+    min-height: 60vh;
+    font-weight: 500;
+    font-size: 35px;
+    line-height: 43px;
+    color: #000000;
+}
+
+.page_header {
+    margin: 0 auto;
+    padding: 0;
+    background: #424242;
+}
+
+.phone_link {
+    color: #f6c609;
+    text-decoration: none;
+    font-weight: bold;
+}
+
+/* Main */
+
+.image-wrapper {
+    position: relative;
+    display: block;
+}
+
+.header_image {
+    width: 100%;
+    height: auto;
+    display: block;
+}
+
+.image-text {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    text-align: center;
+    color: #FFFFE0;
+    font-size: 60px;
+    padding: 10px 20px;
+    z-index: 1;
+}
+
+.image-wrapper::after {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.4);
+    pointer-events: none;
+}
+
+.navigation_list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 40px;
+    margin: auto 0;
+    padding: 0 15px;
+    list-style: none;
+    justify-content: center;
+}
+
+.navigation_title {
+    display: block;
+    min-height: auto;
+    font-size: 25px;
+    line-height: 30px;
+    text-decoration: none;
+    color: #f6c609;
+}
+
+.container_page_header {
+    display: flex;
+    padding-top: 50px;
+    gap: 10px;
+    padding-left: 100px;
+}
+
+.page_main {
+    flex: 1;
+    text-align: center;
+}
+
+.container_catalog {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.catalog_title {
+    margin: 0;
+    margin-top: 35px;
+    padding: 0;
+    font-size: 45px;
+    line-height: 55px;
+    color: #000000;
+    text-align: center;
+}
+
+.catalog_list {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    margin-left: 15px;
+    margin-top: 40px;
+    padding: 0;
+    gap: 40px 30px;
+    list-style: none;
+}
+
+.catalog_item {
+    width: 450px;
+    max-width: 100%;
+}
+
+.catalog_item_img {
+    border-radius: 15px;
+}
+
+.catalog_text {
+    margin: 0;
+    padding: 0;
+    padding-top: 15px;
+    font-weight: 500;
+    font-size: 35px;
+    line-height: 45px;
+    color: #000000;
+    text-align: center;
+}
+
+.price {
+    text-align: center;
+    width: 100%;
+}
+
+/* Footer */
+
+.page_footer {
+    margin: 0;
+    height: auto;
+    text-align: center;
+    align-items: center;
+    background-image: linear-gradient(0deg, #bfaba8, rgba(237, 164, 24, 0) 100%);
+}
+
+.footer_list {
+    display: flex;
+    flex-wrap: wrap;
+    margin: 0;
+    padding: 0;
+    padding-top: 80px;
+    gap: 50px;
+    font-size: 20px;
+    line-height: 25px;
+    justify-content: center;
+    list-style: none;
+}
+
+.footer_title {
+    margin: 0;
+    padding: 0;
+    text-decoration: none;
+    color: #000000;
+}
+
+.footer_page_text {
+    margin: 0;
+    padding: 0;
+    padding-top: 20px;
+    font-weight: 500;
+    font-size: 20px;
+    line-height: 25px;
+    list-style: none
+}
+
+.footer_text {
+    padding-top: 25px;
+}
+
+.footer_contacts {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    justify-content: center;
+    list-style: none;
+    padding-top: 25px;
+}
+
+.footer_image {
+    display: flex;
+    width: 50px;
+    height: 50px;
+    text-align: center;
+    margin-bottom: 20px;
+}
+
+/* Раздел для преимуществ */
+
+.advantages {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 30px;
+  justify-content: center;
+  padding: 40px 20px;
+}
+
+.advantage-card {
+  flex: 1 1 250px;
+  max-width: 300px;
+  text-align: center;
+  padding: 25px 15px;
+  border: 1px solid #e0e0e0;
+  border-radius: 12px;
+  background-color: #fff;
+  transition: box-shadow 0.3s;
+}
+
+.advantage-card:hover {
+  box-shadow: 0 8px 20px rgba(0,0,0,0.08);
+}
+
+.advantage-icon {
+  font-size: 48px;
+  margin-bottom: 15px;
+}
+
+.advantage-title {
+  font-size: 1.2rem;
+  margin-bottom: 10px;
+  color: #333;
+}
+
+.advantage-text {
+  font-size: 0.95rem;
+  color: #666;
+  line-height: 1.5;
+}

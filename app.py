@@ -1,6 +1,6 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template
+from flask import Flask, render_template, jsonify
 from flask_sqlalchemy import SQLAlchemy
 from flask import redirect, request, session, flash
 
@@ -33,14 +33,33 @@ def index():
 
 
 @app.route('/menu')
+def menu_page():
+    return render_template('menu.html')
+
+
+@app.route('/api/menu', methods=['GET'])
 def menu():
     items = MenuItem.query.all()
     categories = {}
+    result = []
     for item in items:
         if item.category not in categories:
             categories[item.category] = []
         categories[item.category].append(item)
-    return render_template('menu.html', categories=categories)
+
+    for category, items_list in categories.items():
+        items = []
+        for item in items_list:
+            items.append({
+                "id": item.id,
+                "name": item.name,
+                "price": str(item.price),
+                "category": item.category,
+                "image": item.image})
+        result.append({
+            "category": category,
+            "items": items})
+    return jsonify(result), 200
 
 
 @app.route('/about_us')

@@ -1,26 +1,77 @@
 {% extends "index.html" %}
 
 {% block content %}
-
-
 <main class="page_main">
-    {% for category, items in categories.items() %}
-    <h2 class="catalog_title">{{ category }}</h2>
-    <section class="container_catalog">
-        <ul class="catalog_list">
-            {% for item in items %}
-            <li class="catalog_item">
-                <img src="{{ url_for('static', filename='images/' + item.image) }}"
-                     width="300" height="200" class="catalog_item_img" alt="{{ item.name }}">
-                <p class="catalog_text">{{ item.name }}</p>
-                <p class="price">{{ item.price }}₽</p>
-            </li>
-            {% endfor %}
-        </ul>
-    </section>
-    {% endfor %}
+    <div id="menuContainer">
+        <p style="text-align: center; padding: 40px; color: #888;">⏳ Загрузка меню...</p>
+    </div>
 </main>
 
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
 
+        const container = document.getElementById('menuContainer');
+        async function loadMenu() {
+            try {
+                const response = await fetch('/api/menu');
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                const categories = await response.json();
+                if (!categories || categories.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999;">Меню пусто</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                categories.forEach(cat => {
+                    const title = document.createElement('h2');
+                    title.className = 'catalog_title';
+                    title.textContent = cat.category;
+                    container.appendChild(title);
+
+                    const section = document.createElement('section');
+                    section.className = 'container_catalog';
+                    container.appendChild(section);
+
+                    const list = document.createElement('ul');
+                    list.className = 'catalog_list';
+                    section.appendChild(list);
+
+                    cat.items.forEach(item => {
+                        const listItem = document.createElement('li');
+                        listItem.className = 'catalog_item';
+                        list.appendChild(listItem);
+
+                        const img = document.createElement('img');
+                        img.className = 'catalog_item_img';
+                        img.width = 300;
+                        img.height = 200;
+                        img.src = `/static/images/${item.image}`;
+                        img.alt = item.name;
+
+                        listItem.appendChild(img);
+
+                        const nameP = document.createElement('p');
+                        nameP.className = 'catalog_text';
+                        nameP.textContent = item.name;
+                        listItem.appendChild(nameP);
+
+                        const priceP = document.createElement('p');
+                        priceP.className = 'price';
+                        priceP.textContent = `${item.price}₽`;
+                        listItem.appendChild(priceP);
+                    });
+                });
+            } catch (error) {
+                console.error('ОШИБКА:', error);
+                container.innerHTML = `<p style="text-align:center; color:red;">❌ Ошибка: ${error.message}</p>`;
+            }
+        }
+        loadMenu();
+    });
+</script>
 
 {% endblock %}

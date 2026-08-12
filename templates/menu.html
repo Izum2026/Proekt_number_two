@@ -54,6 +54,12 @@
 
                         listItem.appendChild(img);
 
+                        const button = document.createElement('button');
+                        button.textContent = 'В корзину';
+                        button.className = 'add-to-cart';
+                        button.dataset.id = item.id;
+                        listItem.appendChild(button);
+
                         const nameP = document.createElement('p');
                         nameP.className = 'catalog_text';
                         nameP.textContent = item.name;
@@ -67,9 +73,28 @@
                 });
             } catch (error) {
                 console.error('ОШИБКА:', error);
-                container.innerHTML = `<p style="text-align:center; color:red;">❌ Ошибка: ${error.message}</p>`;
+                container.innerHTML = `<p style="text-align:center; color:red;">Ошибка: ${error.message}</p>`;
             }
         }
+        container.addEventListener('click', function(event) {
+        const button = event.target.closest('.add-to-cart');
+        if (!button) return;
+
+        const itemId = button.dataset.id;
+
+        fetch('/api/cart', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ item_id: itemId, quantity: 1 })
+        })
+        .then(response => response.json())
+        .then(data => {
+            console.log('Добавлено!', data);
+        })
+        .catch(error => {
+            console.error('Ошибка:', error);
+        });
+    });
         loadMenu();
     });
 </script>

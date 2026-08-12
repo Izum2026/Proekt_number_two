@@ -1,0 +1,128 @@
+{% extends "index.html" %}
+
+{% block content %}
+<main class="page_main">
+    <h1 style="margin-top: 30px;">Корзина</h1>
+    <div class="container">
+        <div class="table-responsive">
+            <table class="table table-hover table-bordered">
+                <thead>
+                <tr>
+                    <th>Артикул</th>
+                    <th>Название</th>
+                    <th>Цена</th>
+                    <th>Количество</th>
+                    <th>Сумма</th>
+                    <th></th>
+                </tr>
+                </thead>
+                <tbody id="cart-body">
+
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div id="menuContainer">
+        <p style="text-align: center; padding: 40px; color: #888;">⏳ Загрузка корзины...</p>
+    </div>
+</main>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+
+        const container = document.getElementById('menuContainer');
+        async function loadMenu() {
+            try {
+                const response = await fetch('/api/cart');
+
+                if (!response.ok) {
+                    throw new Error(`Ошибка HTTP: ${response.status}`);
+                }
+
+                const data = await response.json();
+                const items = data.items;
+                const summa = data.summa;
+                const tbody = document.getElementById('cart-body');
+
+                tbody.innerHTML = '';
+
+                if (!items || items.length === 0) {
+                    container.innerHTML = '<p style="text-align:center; color:#999;">Меню пусто</p>';
+                    return;
+                }
+
+                container.innerHTML = '';
+                items.forEach(item => {
+                    const tr = document.createElement('tr');
+                    const tdId = document.createElement('td');
+                    tdId.textContent = item.id;
+                    tr.appendChild(tdId);
+
+                    const tdName = document.createElement('td');
+                    tdName.textContent = item.name;
+                    tr.appendChild(tdName);
+
+                    const tdPrice = document.createElement('td');
+                    tdPrice.textContent = `${item.price} ₽`;
+                    tr.appendChild(tdPrice);
+
+                    const quantityGroup = document.createElement('div');
+                    quantityGroup.className = 'navigation_list'
+                    const tdQuantity = document.createElement('td');
+                    tdQuantity.textContent = item.quantity;
+                    const minusButton = document.createElement('button');
+                    minusButton.textContent = '-';
+                    minusButton.className = 'cart-item__btn-inc-count js-change-count';
+                    const plusButton = document.createElement('button');
+                    plusButton.textContent = '+';
+                    plusButton.className = 'cart-item__btn-inc-count js-change-count';
+                    quantityGroup.appendChild(minusButton);
+                    quantityGroup.appendChild(tdQuantity);
+                    quantityGroup.appendChild(plusButton);
+                    tr.appendChild(quantityGroup);
+
+                    const tdTotal = document.createElement('td');
+                    tdTotal.textContent = `${item.price * item.quantity} ₽`;
+                    tr.appendChild(tdTotal);
+
+                    const tdAction = document.createElement('td');
+                    const deleteBtn = document.createElement('button');
+                    deleteBtn.textContent = 'Удалить';
+                    deleteBtn.className = 'btn btn-danger btn-sm';
+                    deleteBtn.dataset.id = item.id;
+                    const itemId = deleteBtn.dataset.id;
+
+                    deleteBtn.addEventListener('click', function() {
+                        fetch(`/api/cart/${item.id}`, {
+                            method: 'DELETE',
+                        })
+                        .then(response => {
+                            if (!response.ok) return;
+                            return response.json();
+                        })
+                        .then(data => {
+                            loadMenu();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка удаления:', error);
+                            alert('Не удалось удалить товар');
+                        });
+                    });
+                    tdAction.appendChild(deleteBtn);
+                    tr.appendChild(tdAction);
+
+                    tbody.appendChild(tr);
+                });
+                const allSumma = document.createElement('p');
+                allSumma.style.cssText = 'font-size: 40px; text-align: center; margin-top: 30px;';
+                allSumma.textContent = `Итого: ${summa}₽`;
+                container.appendChild(allSumma);
+            } catch (error) {
+                console.error('ОШИБКА:', error);
+                container.innerHTML = `<p style="text-align:center; color:red;">Ошибка: ${error.message}</p>`;
+            }
+        }
+        loadMenu();
+    });
+</script>
+
+{% endblock %}

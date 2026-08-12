@@ -1,10 +1,11 @@
 import os
 from dotenv import load_dotenv
-from flask import Flask, render_template, jsonify
+from flask import Flask, render_template, redirect, request, session, flash, abort
 from flask_sqlalchemy import SQLAlchemy
-from flask import redirect, request, session, flash
+from flask_restful import Api, Resource
 
 app = Flask(__name__)
+api = Api(app)
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
@@ -37,29 +38,97 @@ def menu_page():
     return render_template('menu.html')
 
 
-@app.route('/api/menu', methods=['GET'])
-def menu():
-    items = MenuItem.query.all()
-    categories = {}
-    result = []
-    for item in items:
-        if item.category not in categories:
-            categories[item.category] = []
-        categories[item.category].append(item)
+class MenuListResource(Resource):
+    def get(self):
+        items_menu = MenuItem.query.all()
+        categories = {}
+        result = []
+        for item in items_menu:
+            if item.category not in categories:
+                categories[item.category] = []
+            categories[item.category].append(item)
 
-    for category, items_list in categories.items():
+        for category, items_list in categories.items():
+            items = []
+            for item in items_list:
+                items.append({
+                    "id": item.id,
+                    "name": item.name,
+                    "price": str(item.price),
+                    "category": item.category,
+                    "image": item.image})
+            result.append({
+                "category": category,
+                "items": items})
+        return result
+
+
+api.add_resource(MenuListResource, '/api/menu')
+
+
+class CartResource(Resource):
+
+    def get(self):
+        cart = session.get('cart', {})
         items = []
-        for item in items_list:
+        score = 0
+        summa = 0
+        if not cart:
+            return {'items': [], 'score': 0, 'summa': 0}
+        for item_id, quantity in cart.items():
+            item = db.session.get(MenuItem, item_id)
+            if item is None:
+                continue
             items.append({
                 "id": item.id,
                 "name": item.name,
                 "price": str(item.price),
-                "category": item.category,
-                "image": item.image})
-        result.append({
-            "category": category,
-            "items": items})
-    return jsonify(result), 200
+                "image": item.image,
+                "quantity": quantity
+            })
+            score += quantity
+            summa += quantity * item.price
+        return {'items': items, 'score': score, 'summa': summa}
+
+    def post(self):
+        data = request.get_json()
+        if not data:
+            abort(400, description="No data")
+
+        item_id = data['item_id']
+        quantity = data.get('quantity', 1)
+        cart = session.get('cart', {})
+
+        if item_id in cart:
+            cart[item_id] += quantity
+        else:
+            cart[item_id] = quantity
+
+        session['cart'] = cart
+        return cart
+
+    def delete(self):
+        session['cart'] = {}
+        return {"message": "Корзина очищена"}
+
+
+api.add_resource(CartResource, '/api/cart')
+
+
+class CartItemResource(Resource):
+    def delete(self, item_id):
+        cart = session.get('cart', {})
+        if str(item_id) not in cart:
+            abort(404, description="No item")
+        del cart[str(item_id)]
+        session['cart'] = cart
+        return {"message": "Товар удалён"}, 200
+
+    def put(self, item_id):
+        ...
+
+
+api.add_resource(CartItemResource, '/api/cart/<int:item_id>')
 
 
 @app.route('/about_us')
@@ -75,6 +144,11 @@ def admin_login():
             return redirect('/admin')
         flash('Неверный пароль')
     return render_template('admin.html')
+
+
+@app.route('/cart')
+def basket():
+    return render_template('cart.html')
 
 
 if __name__ == '__main__':

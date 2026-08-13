@@ -125,7 +125,21 @@ class CartItemResource(Resource):
         return {"message": "Товар удалён"}, 200
 
     def put(self, item_id):
-        ...
+        data = request.get_json()
+        if not data:
+            abort(400, description="No data")
+        quantity = data['quantity']
+
+        cart = session.get('cart', {})
+        if str(item_id) not in cart:
+            abort(404, description="No item")
+
+        if quantity == 0:
+            del cart[str(item_id)]
+        else:
+            cart[str(item_id)] = quantity
+        session['cart'] = cart
+        return {"message": "Количество обновлено"}, 200
 
 
 api.add_resource(CartItemResource, '/api/cart/<int:item_id>')

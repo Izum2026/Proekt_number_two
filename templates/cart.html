@@ -75,8 +75,66 @@
                     const plusButton = document.createElement('button');
                     plusButton.textContent = '+';
                     plusButton.className = 'cart-item__btn-inc-count js-change-count';
+                    minusButton.addEventListener('click', function() {
+                        const minusQuantity = item.quantity - 1;
+
+                        if (minusQuantity <= 0) {
+                            fetch(`/api/cart/${item.id}`, {
+                                method: 'DELETE'
+                            })
+                            .then(response => {
+                                if (!response.ok) throw new Error('Ошибка удаления');
+                                return response.json();
+                            })
+                            .then(data => {
+                                loadMenu();
+                            })
+                            .catch(error => {
+                                console.error('Ошибка:', error);
+                                alert('Не удалось удалить товар');
+                            });
+                            return;
+                        }
+
+                        fetch(`/api/cart/${item.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ quantity: minusQuantity })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Ошибка изменения количества товара');
+                            return response.json();
+                        })
+                        .then(data => {
+                            loadMenu();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка:', error);
+                            alert('Не удалось изменить количество товара');
+                        });
+                    });
                     quantityGroup.appendChild(minusButton);
                     quantityGroup.appendChild(tdQuantity);
+                    plusButton.addEventListener('click', function() {
+                        const plusQuantity = item.quantity + 1;
+
+                        fetch(`/api/cart/${item.id}`, {
+                            method: 'PUT',
+                            headers: { 'Content-Type': 'application/json' },
+                            body: JSON.stringify({ quantity: plusQuantity })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Ошибка изменения количества товара');
+                            return response.json();
+                        })
+                        .then(data => {
+                            loadMenu();
+                        })
+                        .catch(error => {
+                            console.error('Ошибка:', error);
+                            alert('Не удалось изменить количество товара');
+                        });
+                    });
                     quantityGroup.appendChild(plusButton);
                     tr.appendChild(quantityGroup);
 

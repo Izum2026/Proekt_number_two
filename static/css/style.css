@@ -49,8 +49,23 @@ main {
 
 /* Main */
 
-.add-to-cart {
+.btn-primary-order {
+    background: linear-gradient(45deg, #f6c6F9, #f90609);
+    border: none;
+    box-shadow: 0 4px 15px rgba(255, 10, 0, 0.3);
+    transition: 1s;
+}
 
+.btn-primary {
+    background: linear-gradient(45deg, #f6c609, #f90609);
+    border: none;
+    box-shadow: 0 4px 15px rgba(0, 212, 255, 0.3);
+    transition: 1s;
+}
+
+.btn-primary:active {
+    background: linear-gradient(45deg, #ff6100, #e10979);
+    transform: scale(1.1);
 }
 
 .image-wrapper {

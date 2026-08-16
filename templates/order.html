@@ -1,0 +1,42 @@
+{% extends "index.html" %}
+
+{% block content %}
+
+<main class="page_main">
+    <h1 style="margin-top: 30px;">Оформление заказа</h1>
+    <div class="container">
+        <form method="POST">
+            {{ form.hidden_tag() }}
+            <h3 class="alert alert-info">В Вашей корзине {{ result.score }} товара(ов) на общую сумму {{ result.summa }}
+                рублей. Заполните форму ниже и нажмите
+                кнопку 'Отправить заказ.'</h3>
+            <div class="form-group row">
+                Ваше имя *
+                {{ form.name(placeholder=form.name.label.text) }}
+                {% if form.name.errors %}
+                    <div class="alert alert-danger">{{ form.name.errors[0] }}</div>
+                {% endif %}
+            </div><br>
+            <div class="form-group row">
+                Телефон *
+                {{ form.phone(placeholder=form.phone.label.text) }}
+                {% if form.phone.errors %}
+                    <div class="alert alert-danger">{{ form.phone.errors[0] }}</div>
+                {% endif %}
+            </div><br>
+            <div class="form-group row">
+                Адрес доставки *
+                {{ form.address(placeholder=form.address.label.text) }}
+                {% if form.address.errors %}
+                    <div class="alert alert-danger">{{ form.address.errors[0] }}</div>
+                {% endif %}
+            </div><br>
+            <div class="form-group row">
+                Сообщение
+                {{ form.message(placeholder=form.message.label.text) }}
+            </div><br>
+            {{ form.submit(class="btn btn-success") }}
+        </form>
+    </div>
+</main>
+{% endblock %}

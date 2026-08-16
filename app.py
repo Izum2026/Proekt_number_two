@@ -1,8 +1,11 @@
 import os
+import json
+import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, session, flash, abort
 from flask_sqlalchemy import SQLAlchemy
 from flask_restful import Api, Resource
+from order_form import OrderForm
 
 app = Flask(__name__)
 api = Api(app)
@@ -26,6 +29,18 @@ class MenuItem(db.Model):
 from admin import init_admin
 
 init_admin(app, db)
+
+
+class Order(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    time = db.Column(db.DateTime)
+    client_name = db.Column(db.String(100))
+    phone = db.Column(db.String(25))
+    address = db.Column(db.String(400))
+    message = db.Column(db.String(400))
+    items_json = db.Column(db.Text)
+    status = db.Column(db.String(20), default='Новый')
+    total_summa = db.Column(db.Float)
 
 
 @app.route('/')
@@ -163,6 +178,53 @@ def admin_login():
 @app.route('/cart')
 def basket():
     return render_template('cart.html')
+
+
+@app.route('/order', methods=['GET', 'POST'])
+def order():
+    form = OrderForm()
+    cart = session.get('cart', {})
+    items = CartResource.get(cart)
+    if not cart:
+        return redirect('/cart')
+    if form.validate_on_submit():
+        cart = session.get('cart', {})
+
+        items_list = []
+        total_summa = 0
+        for key, _ in cart.items():
+            item = db.session.get(MenuItem, key)
+            if item is None:
+                continue
+            total_summa += int(item.price) * cart[key]
+            items_list.append({
+                "id": item.id,
+                "name": item.name,
+                "price": str(item.price),
+                "quantity": cart[key],
+                "category": item.category
+            })
+        order = Order(
+            time=datetime.datetime.now(),
+            client_name=form.name.data,
+            phone=form.phone.data,
+            address=form.address.data,
+            message=form.message.data,
+            items_json=json.dumps(items_list, ensure_ascii=False),
+            status='Новый',
+            total_summa=total_summa
+        )
+        db.session.add(order)
+        db.session.commit()
+        session['cart'] = {}
+        return redirect('/order_success')
+
+    return render_template('order.html', form=form, result=items)
+
+
+@app.route('/order_success')
+def order_success():
+    return render_template('order_success.html')
 
 
 if __name__ == '__main__':

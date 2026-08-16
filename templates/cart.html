@@ -20,10 +20,11 @@
 
                 </tbody>
             </table>
+            <div id="menuContainer">
+
+            </div>
+            <a class="btn btn-primary-order" href="/order">Оформить заказ</a>
         </div>
-    </div>
-    <div id="menuContainer">
-        <p style="text-align: center; padding: 40px; color: #888;">⏳ Загрузка корзины...</p>
     </div>
 </main>
 <script>
@@ -46,10 +47,9 @@
                 tbody.innerHTML = '';
 
                 if (!items || items.length === 0) {
-                    container.innerHTML = '<p style="text-align:center; color:#999;">Меню пусто</p>';
+                    container.innerHTML = '<p style="text-align:center; color:#999;">Пустая корзина</p>';
                     return;
                 }
-
                 container.innerHTML = '';
                 items.forEach(item => {
                     const tr = document.createElement('tr');

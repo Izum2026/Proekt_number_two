@@ -3,44 +3,33 @@ import json
 import datetime
 from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, session, flash, abort
-from flask_sqlalchemy import SQLAlchemy
+from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api, Resource
 from order_form import OrderForm
+from models import MenuItem, User, Order
+from extensions import db
+from register_form import RegisterForm
+from login_form import LoginForm
 
 app = Flask(__name__)
 api = Api(app)
 load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
-db = SQLAlchemy(app)
-
-
-class MenuItem(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    name = db.Column(db.String(100), nullable=False)
-    price = db.Column(db.Integer, nullable=False)
-    category = db.Column(db.String(50), nullable=False)
-    image = db.Column(db.String(200), nullable=False)
-
-    def __repr__(self):
-        return f'{self.name} ({self.price}₽)'
-
+db.init_app(app)
 
 from admin import init_admin
 
 init_admin(app, db)
 
+login_manager = LoginManager()
+login_manager.init_app(app)
+login_manager.login_view = 'login'
 
-class Order(db.Model):
-    id = db.Column(db.Integer, primary_key=True)
-    time = db.Column(db.DateTime)
-    client_name = db.Column(db.String(100))
-    phone = db.Column(db.String(25))
-    address = db.Column(db.String(400))
-    message = db.Column(db.String(400))
-    items_json = db.Column(db.Text)
-    status = db.Column(db.String(20), default='Новый')
-    total_summa = db.Column(db.Float)
+
+@login_manager.user_loader
+def load_user(user_id):
+    return db.session.get(User, int(user_id))
 
 
 @app.route('/')
@@ -51,6 +40,53 @@ def index():
 @app.route('/menu')
 def menu_page():
     return render_template('menu.html')
+
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    form = RegisterForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if not user:
+            user = User(
+                name=form.name.data,
+                email=form.email.data
+            )
+            user.set_password(form.password.data)
+            db.session.add(user)
+            db.session.commit()
+            flash('Регистрация успешна!', 'success')
+            return redirect('/login')
+        else:
+            flash('Этот email уже используется.', 'danger')
+    return render_template('register.html', form=form)
+
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
+            return redirect('/')
+        else:
+            flash('Неверный логин или пароль', 'danger')
+    return render_template('login.html', form=form)
+
+
+@app.route('/profile')
+@login_required
+def profile():
+    orders = [
+        {
+            'order': order,
+            'items': json.loads(order.items_json)
+        }
+        for order in current_user.orders
+    ]
+    print(orders)
+    return render_template('profile.html', user=current_user, orders=orders)
 
 
 class MenuListResource(Resource):
@@ -181,6 +217,7 @@ def basket():
 
 
 @app.route('/order', methods=['GET', 'POST'])
+@login_required
 def order():
     form = OrderForm()
     cart = session.get('cart', {})
@@ -196,11 +233,11 @@ def order():
             item = db.session.get(MenuItem, key)
             if item is None:
                 continue
-            total_summa += int(item.price) * cart[key]
+            total_summa += item.price * cart[key]
             items_list.append({
                 "id": item.id,
                 "name": item.name,
-                "price": str(item.price),
+                "price": item.price,
                 "quantity": cart[key],
                 "category": item.category
             })
@@ -212,7 +249,8 @@ def order():
             message=form.message.data,
             items_json=json.dumps(items_list, ensure_ascii=False),
             status='Новый',
-            total_summa=total_summa
+            total_summa=total_summa,
+            user_id=current_user.id
         )
         db.session.add(order)
         db.session.commit()
@@ -223,6 +261,7 @@ def order():
 
 
 @app.route('/order_success')
+@login_required
 def order_success():
     return render_template('order_success.html')
 

@@ -18,12 +18,48 @@
             <li class="nav-item"><a href="tel:+77777777777" class="navigation_title">
                 <i class="bi bi-telephone"></i> +7 (777) 777-77-77</a>
             </li>
+            <li class="nav-item">
+                {% if current_user.is_authenticated %}
+                <ul class="navigation_list">
+                    <li class="nav-item">
+                        <a href="/profile" class="btn btn-login-register">
+                            Профиль
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/logout" class="btn btn-danger btn-sm rounded-pill px-3">
+                            Выйти
+                        </a>
+                    </li>
+                </ul>
+                {% else %}
+                <ul class="navigation_list">
+                    <li class="nav-item">
+                        <a href="/login" class="btn btn-login-register">
+                            Войти
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a href="/register" class="btn btn-login-register">
+                            Регистрация
+                        </a>
+                    </li>
+                    {% endif %}
+                </ul>
+            </li>
         </ul>
         <a href="/cart" class="navigation_title">
             <img src="{{ url_for('static', filename='images/basket_image.png') }}" alt="Корзина">
         </a>
     </div>
 </header>
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+{% for category, message in messages %}
+<div class="alert alert-{{ category }}">{{ message }}</div>
+{% endfor %}
+{% endif %}
+{% endwith %}
 {% block content %}
 <main class="page_main">
     <div class="image-wrapper">

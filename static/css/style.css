@@ -48,13 +48,11 @@ main {
 }
 
 .form-control {
-    background: rgba(255, 255, 255, 0.05);
+    background: rgba(10, 50, 255, 0.05);
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 10px;
-    color: #e0e0e0;
+    color: #424242;
 }
-
-/* Main */
 
 .btn-primary-order {
     background: linear-gradient(45deg, #f6c6F9, #f90609);
@@ -160,6 +158,46 @@ main {
     font-size: 45px;
     line-height: 55px;
     color: #000000;
+    text-align: center;
+}
+
+.order_title {
+    margin: 0;
+    margin-top: 25px;
+    padding: 0;
+    font-size: 35px;
+    line-height: 45px;
+    color: #f6c609;
+    text-align: center;
+}
+
+.order_info {
+    margin: 0;
+    margin-top: 15px;
+    padding: 0;
+    font-size: 35px;
+    line-height: 45px;
+    color: #777;
+    text-align: center;
+}
+
+.order_catalog {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin: 0;
+    padding: 0;
+    gap: 10px 30px;
+    list-style: none;
+}
+
+.order_item {
+    margin: 0;
+    margin-top: 15px;
+    padding: 0;
+    font-size: 25px;
+    line-height: 45px;
+    color: #557755;
     text-align: center;
 }
 

@@ -1,19 +1,24 @@
 {% extends "index.html" %}
 
 {% block content %}
-<h1 class="text-center">Ваш профиль</h1>
-<h1>Ваши заказы:</h1>
-{% if orders %}
-    {% for order in orders %}
-        <p>Заказ №{{ order["order"].id }}, Сумма: {{ order["order"].total_summa }}₽, Статус: {{ order["order"].status }}, Время:
-        {{ order["order"].time.strftime('%d.%m.%Y %H:%M') }}</p>
-        <p>Содержимое заказа:</p>
-        {% for item in order["items"] %}
-            <p>{{ item.category }} {{ item.name }} в количестве {{ item.quantity }} шт, суммой {{ item.quantity  *  item.price}}₽</p>
-        {% endfor %}<br>
-    {% endfor %}
-    <a class="title" href="/cart">Добавить заказ?</a>
-{% else %}
-    <p class="text-muted">У Вас пока нет заказов.</p>
-{% endif %}
+<h1 class="text-center" style="margin-top: 35px;">Ваши заказы:</h1><br>
+<div class="container">
+    {% if orders %}
+        {% for order in orders %}
+            <p class="order_title">Заказ №{{ order["order"].id }}</p>
+            <p class="order_info">Сумма: {{ order["order"].total_summa }}₽, Статус: {{ order["order"].status }}, Время:
+            {{ order["order"].time.strftime('%d.%m.%Y %H:%M') }}</p>
+            <p class="order_info">Адрес доставки: {{ order["order"].address }}</p>
+            <p class="order_info">Содержимое заказа:</p>
+            <ul class="order_catalog">
+                {% for item in order["items"] %}
+                    <li class="order_item">{{ item.category }} {{ item.name }} в количестве {{ item.quantity }} шт, суммой {{ item.quantity  *  item.price}}₽</li>
+                {% endfor %}
+            </ul>
+        {% endfor %}
+        <br><a class="nav-link" style="text-align: center; color: #f6c609;" href="/cart">Добавить заказ?</a>
+    {% else %}
+        <p class="text-muted">У Вас пока нет заказов.</p>
+    {% endif %}
+</div>
 {% endblock %}

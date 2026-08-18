@@ -5,11 +5,12 @@ from dotenv import load_dotenv
 from flask import Flask, render_template, redirect, request, session, flash, abort
 from flask_login import LoginManager, login_user, login_required, logout_user, current_user
 from flask_restful import Api, Resource
-from order_form import OrderForm
+from forms import OrderForm
 from models import MenuItem, User, Order
 from extensions import db
-from register_form import RegisterForm
-from login_form import LoginForm
+from forms import RegisterForm
+from forms import LoginForm
+from flasgger import Swagger, swag_from
 
 app = Flask(__name__)
 api = Api(app)
@@ -17,6 +18,7 @@ load_dotenv()
 app.config['SECRET_KEY'] = os.getenv('SECRET_KEY')
 app.config['SQLALCHEMY_DATABASE_URI'] = os.getenv('DATABASE')
 db.init_app(app)
+swagger = Swagger(app)
 
 from admin import init_admin
 
@@ -25,6 +27,16 @@ init_admin(app, db)
 login_manager = LoginManager()
 login_manager.init_app(app)
 login_manager.login_view = 'login'
+
+
+@app.errorhandler(404)
+def not_found_error_404(error):
+    return render_template('404.html'), 404
+
+
+@app.errorhandler(500)
+def internal_error_500(error):
+    return render_template('500.html'), 500
 
 
 @login_manager.user_loader
@@ -40,6 +52,12 @@ def index():
 @app.route('/menu')
 def menu_page():
     return render_template('menu.html')
+
+
+@app.route('/logout', methods=['GET', 'POST'])
+def logout():
+    logout_user()
+    return redirect("/")
 
 
 @app.route('/register', methods=['GET', 'POST'])
@@ -65,6 +83,7 @@ def register():
 @app.route('/login', methods=['GET', 'POST'])
 def login():
     form = LoginForm()
+
     if form.validate_on_submit():
         user = User.query.filter_by(email=form.email.data).first()
         if user and user.check_password(form.password.data):
@@ -85,12 +104,72 @@ def profile():
         }
         for order in current_user.orders
     ]
-    print(orders)
     return render_template('profile.html', user=current_user, orders=orders)
 
 
 class MenuListResource(Resource):
     def get(self):
+        """
+        GET /api/menu
+        Список всех категорий с товарами
+        ---
+        tags:
+          - menu
+        responses:
+          200:
+            description: Успешный ответ
+            examples:
+              application/json:
+                [
+                  {
+                    "category": "Шаурма",
+                    "items": [
+                      {
+                        "id": 1,
+                        "name": "Классическая",
+                        "price": "280",
+                        "category": "Шаурма",
+                        "image": "classic_shaurma.jpg"
+                      },
+                      {
+                        "id": 2,
+                        "name": "Барбекю",
+                        "price": "300",
+                        "category": "Шаурма",
+                        "image": "barbecue_shaurma.jpg"
+                      },
+                      {
+                        "id": 5,
+                        "name": "Острая",
+                        "price": "290",
+                        "category": "Шаурма",
+                        "image": "spicy_shaurma.jpg"
+                      }
+                    ]
+                  },
+                  {
+                    "category": "Картошка",
+                    "items": [
+                      {
+                        "id": 3,
+                        "name": "Фри",
+                        "price": "150",
+                        "category": "Картошка",
+                        "image": "potato_1.jpg"
+                      },
+                      {
+                        "id": 4,
+                        "name": "По-деревенски",
+                        "price": "160",
+                        "category": "Картошка",
+                        "image": "potato_2.png"
+                      }
+                    ]
+                  }
+                ]
+          500:
+            description: Ошибка сервера
+        """
         items_menu = MenuItem.query.all()
         categories = {}
         result = []
@@ -120,6 +199,40 @@ api.add_resource(MenuListResource, '/api/menu')
 class CartResource(Resource):
 
     def get(self):
+        """
+        GET /api/cart
+        Список товаров с корзины
+        ---
+        tags:
+          - cart get
+        responses:
+          200:
+            description: Успешный ответ
+            examples:
+              application/json:
+                 {
+                  "items": [
+                    {
+                      "id": 2,
+                      "name": "Барбекю",
+                      "price": "300",
+                      "image": "barbecue_shaurma.jpg",
+                      "quantity": 1
+                    },
+                    {
+                      "id": 5,
+                      "name": "Острая",
+                      "price": "290",
+                      "image": "spicy_shaurma.jpg",
+                      "quantity": 1
+                    }
+                  ],
+                  "score": 2,
+                  "summa": 590
+                }
+          500:
+            description: Ошибка сервера
+        """
         cart = session.get('cart', {})
         items = []
         score = 0
@@ -142,6 +255,23 @@ class CartResource(Resource):
         return {'items': items, 'score': score, 'summa': summa}
 
     def post(self):
+        """
+        POST /api/cart
+        Список товаров с корзины
+        ---
+        tags:
+          - cart post
+        responses:
+          200:
+            description: Успешный ответ
+            examples:
+              application/json:
+                 {"1": 2, "7": 1}
+          400:
+            description: Неверный запрос
+          404:
+            description: Товар не найден
+        """
         data = request.get_json()
         if not data:
             abort(400, description="No data")
@@ -158,16 +288,27 @@ class CartResource(Resource):
         session['cart'] = cart
         return cart
 
-    def delete(self):
-        session['cart'] = {}
-        return {"message": "Корзина очищена"}
-
 
 api.add_resource(CartResource, '/api/cart')
 
 
 class CartItemResource(Resource):
     def delete(self, item_id):
+        """
+        DELETE /api/cart/{item_id}
+        Удаление товара из корзины
+        ---
+        tags:
+          - cart
+        responses:
+          200:
+            description: Успешный ответ
+            examples:
+              application/json:
+                 {"message": "Товар удалён"}
+          404:
+            description: Товар не найден
+        """
         cart = session.get('cart', {})
         if str(item_id) not in cart:
             abort(404, description="No item")
@@ -176,6 +317,23 @@ class CartItemResource(Resource):
         return {"message": "Товар удалён"}, 200
 
     def put(self, item_id):
+        """
+        PUT /api/cart/{item_id}
+        Изменение количества товара в корзине
+        ---
+        tags:
+          - cart
+        responses:
+          200:
+            description: Успешный ответ
+            examples:
+              application/json:
+                 {"message": "Количество обновлено"}
+          400:
+            description: Неверный запрос
+          404:
+            description: Товар не найден
+        """
         data = request.get_json()
         if not data:
             abort(400, description="No data")
@@ -203,12 +361,14 @@ def about_us():
 
 @app.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
-    if request.method == 'POST':
-        if request.form.get('password') == os.getenv('ADMIN_PASSWORD'):
-            session['admin_logged_in'] = True
+    form = LoginForm()
+    if form.validate_on_submit():
+        user = User.query.filter_by(email=form.email.data).first()
+        if user and user.is_admin and user.check_password(form.password.data):
+            login_user(user, remember=form.remember_me.data)
             return redirect('/admin')
-        flash('Неверный пароль')
-    return render_template('admin.html')
+        flash('Доступ запрещён')
+    return render_template('login.html', form=form)
 
 
 @app.route('/cart')

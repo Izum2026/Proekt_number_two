@@ -10,7 +10,7 @@ from models import MenuItem, User, Order
 from extensions import db
 from forms import RegisterForm
 from forms import LoginForm
-from flasgger import Swagger, swag_from
+from flasgger import Swagger
 
 app = Flask(__name__)
 api = Api(app)

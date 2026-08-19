@@ -36,6 +36,7 @@ class MenuItemAdmin(ProtectedModelView):
     def on_model_change(self, form, model, is_created):
         if form.image_upload.data:
             model.image = form.image_upload.data.filename
+
     column_list = ('name', 'price', 'category', 'image')
     column_formatters = {
         'image_preview': lambda a, b, c, d: f'<img src="/static/images/{c.image}" width="50">'
@@ -44,6 +45,15 @@ class MenuItemAdmin(ProtectedModelView):
 
 class OrdersAdmin(ProtectedModelView):
     column_list = ('client_name', 'phone', 'address', 'message', 'items_json', 'status', 'total_summa')
+    form_choices = {
+        'status': [
+            ('Новый', 'Новый'),
+            ('Готовится', 'Готовится'),
+            ('Готов к выдаче', 'Готов к выдаче'),
+            ('Доставлен', 'Доставлен'),
+            ('Отменён', 'Отменён'),
+        ]
+    }
 
 
 def init_admin(app, db):

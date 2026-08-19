@@ -44,21 +44,25 @@
                             Регистрация
                         </a>
                     </li>
-                    {% endif %}
                 </ul>
+                {% endif %}
             </li>
         </ul>
-        <a href="/cart" class="navigation_title">
-            <img src="{{ url_for('static', filename='images/basket_image.png') }}" alt="Корзина">
-        </a>
+        <ul class="navigation_list">
+            <li class="nav-item">
+                <a href="/cart" class="navigation_title">
+                    <img src="{{ url_for('static', filename='images/basket_image.png') }}" alt="Корзина">
+                </a>
+            </li>
+        </ul>
     </div>
 </header>
 {% with messages = get_flashed_messages(with_categories=true) %}
-{% if messages %}
-{% for category, message in messages %}
-<div class="alert alert-{{ category }}">{{ message }}</div>
-{% endfor %}
-{% endif %}
+    {% if messages %}
+        {% for category, message in messages %}
+            <div class="alert alert-{{ category }}">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
 {% endwith %}
 {% block content %}
 <main class="page_main">
